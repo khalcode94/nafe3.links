@@ -2,27 +2,32 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nafe3 Store | نافع ستور</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nafe3 Store | البوابة الرقمية</title>
     
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Fira+Code:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- كود التصميم والتأثيرات البصرية (CSS) --- */
+        :root {
+            --accent-gold: #e9d5ff;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --card-bg: rgba(255, 255, 255, 0.06);
+            --neon-purple: #c084fc;
+            --neon-blue: #3b82f6;
+            --neon-green: #34d399;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Cairo', sans-serif;
+            cursor: none !important; /* إخفاء مؤشر الماوس التقليدي لاستخدام المؤشر التفاعلي المخصص */
         }
 
         body {
-            background-color: #0c0c0c;
-            /* استبدل 469171.jpg باسم صورة خلفيتك إذا قمت برفعها على GitHub */
-            background-image: url('469171.jpg'); 
-            background-size: cover;
-            background-position: center;
+            background: linear-gradient(135deg, #13112a 0%, #0d091e 50%, #06040d 100%);
             background-attachment: fixed;
             min-height: 100vh;
             display: flex;
@@ -30,254 +35,741 @@
             align-items: flex-start;
             color: #ffffff;
             overflow-x: hidden;
+            perspective: 1500px;
         }
 
-        /* طبقة حماية داكنة وتأثير زجاجي */
+        /* مؤشر ماوس النيون المطور الشبيه بالألعاب */
+        #custom-cursor {
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--neon-purple);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, border-color 0.2s;
+            z-index: 9999;
+            display: none;
+            mix-blend-mode: screen;
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+        }
+        #custom-cursor-dot {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background-color: var(--neon-purple);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            display: none;
+        }
+        @media (min-width: 768px) {
+            #custom-cursor, #custom-cursor-dot { display: block; }
+        }
+
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
         .background-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(15, 15, 15, 0.7));
-            z-index: 1;
+            background: radial-gradient(circle at center, transparent 30%, rgba(6, 4, 13, 0.8) 100%);
+            z-index: 2;
+            pointer-events: none;
         }
 
+        /* كابينة التحكم الرئيسية البلورية */
         .container {
             position: relative;
-            z-index: 2;
-            width: 100%;
+            z-index: 4;
+            width: 92%;
             max-width: 450px;
-            padding: 50px 20px;
+            margin: 40px auto;
+            padding: 35px 24px;
             text-align: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 32px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            animation: springSpawn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* تصميم رأس الصفحة */
+        /* شاشة عرض معلومات النظام اللحظية (Diagnostics HUD) */
+        .hud-system-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 8px 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 25px;
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.02);
+        }
+        .hud-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #34d399;
+            font-weight: bold;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #34d399;
+            animation: pulse-status 1.2s infinite;
+        }
+
+        /* رأس الصفحة */
         .profile-header {
-            margin-bottom: 35px;
-            animation: fadeInDown 1s ease-out;
+            position: relative;
+            margin-bottom: 30px;
         }
 
         .store-name {
-            font-size: 2.6rem;
-            color: #a3e635; /* اللون الأخضر الليموني الجذاب */
-            font-weight: 700;
-            margin-bottom: 5px;
-            text-shadow: 0 0 15px rgba(163, 230, 53, 0.2);
+            font-size: 2.2rem;
+            color: #ffffff; 
+            font-weight: 900;
+            margin-bottom: 6px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            letter-spacing: -0.5px;
         }
 
         .store-bio {
-            font-size: 0.9rem;
-            color: #b3b3b3;
+            font-size: 0.8rem;
+            color: var(--neon-purple);
+            font-family: 'Fira Code', monospace;
+            font-weight: 500;
+            letter-spacing: 1px;
         }
 
-        /* حاوية الأزرار */
         .links-list {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
 
-        /* تصميم الأزرار الذكية */
+        /* الكارت النيون الزجاجي التفاعلي */
+        .card-wrapper {
+            position: relative;
+            border-radius: 18px;
+            padding: 1px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+            animation: cardEntranceSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+            transition: transform 0.1s ease-out, border-color 0.3s;
+            transform-style: preserve-3d;
+        }
+
+        /* زوايا نيون لتزيين الكارت */
+        .hud-bracket {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-color: rgba(255, 255, 255, 0.15);
+            border-style: solid;
+            z-index: 10;
+            opacity: 0.3;
+            transition: all 0.3s;
+        }
+        .bracket-tl { top: 10px; left: 10px; border-width: 1.5px 0 0 1.5px; border-top-left-radius: 4px; }
+        .bracket-tr { top: 10px; right: 10px; border-width: 1.5px 1.5px 0 0; border-top-right-radius: 4px; }
+        .bracket-bl { bottom: 10px; left: 10px; border-width: 0 0 1.5px 1.5px; border-bottom-left-radius: 4px; }
+        .bracket-br { bottom: 10px; right: 10px; border-width: 0 1.5px 1.5px 0; border-bottom-right-radius: 4px; }
+
+        .card-wrapper:hover .hud-bracket {
+            opacity: 1;
+            border-color: var(--glow-color, rgba(255,255,255,0.4));
+        }
+
+        /* تأثير إضاءة الماوس المسلطة على الكارت */
+        .glow-spotlight {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--glow-color, rgba(255,255,255,0.15)) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1;
+        }
+        .card-wrapper:hover .glow-spotlight {
+            opacity: 0.55;
+        }
+
+        .code-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Fira Code', monospace;
+            font-size: 8px;
+            color: var(--glow-color, #ffffff);
+            opacity: 0.02;
+            overflow: hidden;
+            white-space: nowrap;
+            pointer-events: none;
+            direction: ltr;
+            text-align: left;
+            padding: 5px;
+            z-index: 2;
+            transition: opacity 0.3s;
+        }
+        .card-wrapper:hover .code-bg {
+            opacity: 0.08; /* زيادة سطوع الكود الخلفي التفاعلي عند التحويم كألعاب التسلل والهاكرز */
+        }
+
+        /* الزر التفاعلي */
         .link-btn {
+            position: relative;
             display: flex;
             align-items: center;
-            padding: 14px 22px;
-            border-radius: 40px;
+            padding: 16px 20px;
+            border-radius: 17px;
             text-decoration: none;
             color: white;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0; /* يبدأ مخفي لعمل حركة الظهور التتابعي */
-            animation: fadeInUp 0.6s ease-out forwards;
+            background: transparent;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            transition: background 0.3s;
+            transform-style: preserve-3d;
         }
 
-        /* تأثيرات الحركة عند تمرير الماوس */
-        .link-btn:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 8px 25px rgba(163, 230, 53, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(163, 230, 53, 0.4);
-        }
+        .link-btn:hover { background: rgba(255, 255, 255, 0.03); }
+        .icon, .btn-img, .btn-text { transform: translateZ(20px); transition: transform 0.25s ease-out; }
 
-        /* أيقونات الأزرار */
         .icon {
-            font-size: 1.3rem;
-            margin-left: 15px;
-            width: 30px;
+            font-size: 1.4rem;
+            margin-left: 14px;
+            width: 28px;
             text-align: center;
-            transition: transform 0.3s ease;
-        }
-        
-        .link-btn:hover .icon {
-            transform: rotate(10deg) scale(1.1);
+            text-shadow: 0 0 10px currentColor;
         }
 
-        /* الصور المستدعاة من الشيت داخل الزر */
         .btn-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            margin-left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            margin-left: 14px;
             object-fit: cover;
-            border: 2px solid #a3e635;
+            border: 1.5px solid rgba(255,255,255,0.1);
         }
 
-        /* نصوص الأزرار */
-        .btn-text {
+        .btn-text { display: flex; flex-direction: column; text-align: right; flex-grow: 1; }
+        .btn-text .title { font-size: 1.05rem; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .btn-text .subtitle { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); margin-top: 3px; transition: color 0.3s; }
+
+        /* تدرجات ألوان الخيال العلمي */
+        .wrapper-purple { --glow-color: var(--neon-purple); color: #f3e8ff; }
+        
+        .wrapper-blue { 
+            --glow-color: var(--neon-blue); 
+            color: #ffffff; 
+        }
+        .wrapper-blue .link-btn {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.25);
+        }
+        .wrapper-blue .link-btn:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(6, 182, 212, 0.3) 100%);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+        }
+        .wrapper-blue .subtitle { color: rgba(255, 255, 255, 0.7) !important; }
+
+        .wrapper-green  { --glow-color: var(--neon-green); color: #ecfdf5; }
+        .wrapper-dark   { --glow-color: rgba(255,255,255,0.25); color: #f9fafb; }
+
+        .link-btn:hover .subtitle { color: #ffffff; }
+
+        /* شاشة التحميل الجذابة */
+        .hud-loader {
             display: flex;
             flex-direction: column;
-            text-align: right;
-            flex-grow: 1;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.85);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+        }
+        .decryption-wheel {
+            width: 38px;
+            height: 38px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid var(--neon-purple);
+            border-right: 2px solid var(--neon-purple);
+            border-radius: 50%;
+            margin-bottom: 16px;
         }
 
-        .btn-text .title {
-            font-size: 1.05rem;
-            font-weight: 700;
+        @keyframes cardEntranceSpring {
+            0% { opacity: 0; transform: scale(0.9) translateY(40px) rotateX(-8deg); filter: blur(4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0) rotateX(0); filter: blur(0); }
         }
 
-        .btn-text .subtitle {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 2px;
+        @keyframes springSpawn {
+            0% { opacity: 0; transform: scale(0.95) translateY(-20px); filter: blur(5px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
-        /* ألوان التدرج للأزرار */
-        .btn-purple { background: linear-gradient(135deg, rgba(109, 40, 217, 0.8), rgba(76, 29, 149, 0.8)); }
-        .btn-blue   { background: linear-gradient(135deg, rgba(29, 78, 216, 0.8), rgba(30, 58, 138, 0.8)); }
-        .btn-green  { background: linear-gradient(135deg, rgba(5, 150, 105, 0.8), rgba(6, 78, 59, 0.8)); }
-        .btn-dark   { background: linear-gradient(135deg, rgba(55, 65, 81, 0.8), rgba(17, 24, 27, 0.8)); }
-
-        .loading, .error-msg {
-            color: #a3e635;
-            font-size: 1.1rem;
-            padding: 30px;
-            animation: pulse 1.5s infinite;
+        @keyframes pulse-status {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px #34d399; }
         }
 
-        /* الكي-فريمز للحركات */
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
+        .error-msg { color: #f87171; font-size: 0.9rem; padding: 30px; font-weight: bold; font-family: 'Fira Code', monospace; }
     </style>
 </head>
 <body>
 
+    <canvas id="particles-canvas"></canvas>
     <div class="background-overlay"></div>
 
+    <!-- مؤشر الماوس النيون التفاعلي المخصص للألعاب -->
+    <div id="custom-cursor"></div>
+    <div id="custom-cursor-dot"></div>
+
     <div class="container">
-        <header class="profile-header">
-            <h1 class="store-name">نافع ستور</h1>
-            <p class="store-bio">Nafe3.Store For Mobile & Internet Services</p>
+      
+          
+            </div>
+
+        </div>
+
+        <header class="profile-header" id="main-header">
+            <h1 class="store-name" id="dynamic-store-name">SYSTEM_INIT</h1>
+            <p class="store-bio" id="dynamic-store-bio">// LINKING_DATA_STREAM</p>
         </header>
 
         <main class="links-list" id="links-container">
-            <div class="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> جاري تحميل الخدمات والعروض...</div>
+            <div class="hud-loader">
+                <div class="decryption-wheel spin"></div>
+                <div id="decryption-text">&gt; ESTABLISHING_SECURE_CONNECTION_</div>
+            </div>
         </main>
     </div>
 
     <script>
-        // ==========================================
-        // خطوة السيت أب: ضع معرف جدول البيانات الخاص بك هنا
-        // ==========================================
-const SPREADSHEET_ID = '1vUAQxlFhfo0p7Iuadrz4-aeV1sxZ_4ApW6QMinvJoS4';        
+        const SPREADSHEET_ID = '1vUAQxlFhfo0p7Iuadrz4-aeV1sxZ_4ApW6QMinvJoS4'; 
         const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+
+        // === 🎵 مولد المؤثرات الصوتية النيون بدون ملفات خارجية (Native Synth Web Audio API) ===
+        const synthSound = {
+            ctx: null,
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+            playHover() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.06);
+                
+                gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.06);
+            },
+            playClick() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime + 0.04);
+                
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.12);
+            }
+        };
+
+        // === 🚀 شبكة جزيئات التدفق التفاعلية بالكامل مع الماوس ===
+        function initNeuralBackground() {
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let mouse = { x: null, y: null, radius: 100 };
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 2 + 1;
+                    this.vx = (Math.random() * 0.4 - 0.2); 
+                    this.vy = (Math.random() * 0.4 - 0.2);
+                    this.baseSize = this.size;
+                }
+
+                draw() {
+                    ctx.fillStyle = 'rgba(192, 132, 252, 0.45)'; // جزيئات مضيئة بنكهة نيون خفيفة
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
+                    if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+
+                    // تفاعل النجوم المضيئة مع مؤشر الماوس
+                    if (mouse.x != null && mouse.y != null) {
+                        let dx = mouse.x - this.x;
+                        let dy = mouse.y - this.y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < mouse.radius) {
+                            this.size = this.baseSize * 2;
+                            this.x -= dx * 0.015;
+                            this.y -= dy * 0.015;
+                        } else {
+                            if (this.size > this.baseSize) this.size -= 0.1;
+                        }
+                    }
+                    this.draw();
+                }
+            }
+
+            const particleCount = Math.min(Math.floor(window.innerWidth / 15), 55);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function connect() {
+                for (let a = 0; a < particles.length; a++) {
+                    for (let b = a + 1; b < particles.length; b++) {
+                        let dx = particles[a].x - particles[b].x;
+                        let dy = particles[a].y - particles[b].y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 110) {
+                            let opacity = 1 - (distance / 110);
+                            ctx.strokeStyle = `rgba(124, 126, 203, ${opacity * 0.15})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(particles[b].x, particles[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                }
+                connect();
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // === 🖥️ تفعيل تدفق الكود البرمجي التفاعلي بداخل خلفية الكارت ===
+        function startCodeStream(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const chars = "01010101ABCDEFGHIJKLMNOPQRSTUVWXYZ<>[]{}?/!@#$%^&*+=-_";
+            setInterval(() => {
+                let stream = "";
+                for(let i = 0; i < 4; i++) {
+                    let line = "";
+                    for(let j = 0; j < 35; j++) { line += chars[Math.floor(Math.random() * chars.length)]; }
+                    stream += line + "<br>";
+                }
+                el.innerHTML = stream;
+            }, 120);
+        }
+
+        function parseGoogleSheetDate(dateVal) {
+            if (!dateVal) return null;
+            const str = dateVal.toString().trim();
+            const match = str.match(/Date\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+),\s*(\d+),\s*(\d+))?\)/);
+            if (match) return new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+            
+            const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if (dmyMatch) return new Date(parseInt(dmyMatch[3]), parseInt(dmyMatch[2]) - 1, parseInt(dmyMatch[1]));
+
+            const parsed = new Date(str.replace(/\//g, '-'));
+            return isNaN(parsed) ? null : parsed;
+        }
+
+        function runLoaderSequence(onComplete) {
+            const textEl = document.getElementById('decryption-text');
+            const messages = [
+                "> ESTABLISHING_SECURE_GATEWAY_STREAM...",
+                "> SECURITY: DECRYPTION_ACCESS_GRANTED",
+                "> PORTAL INITIALIZED: NAFE3_STORE"
+            ];
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < messages.length) {
+                    textEl.innerText = messages[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    onComplete();
+                }
+            }, 250);
+        }
 
         async function fetchLinks() {
             try {
                 const response = await fetch(url);
                 const text = await response.text();
-                
-                // تنظيف وفك شفرة البيانات القادمة من جوجل شيت تلقائياً
                 const jsonData = JSON.parse(text.substr(47).slice(0, -2));
                 const rows = jsonData.table.rows;
-                
-                const container = document.getElementById('links-container');
-                container.innerHTML = ''; // إزالة كلمة جاري التحميل
 
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                runLoaderSequence(() => {
+                    const container = document.getElementById('links-container');
+                    container.innerHTML = ''; 
 
-                let delay = 0; // متغير لعمل ظهور تتابعي جميل للأزرار
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
 
-                rows.forEach(row => {
-                    // السيت أب التلقائي: قراءة الأعمدة بناءً على ترتيبها في الجدول
-                    const title = row.c[0] ? row.c[0].v : '';
-                    const subtitle = row.c[1] ? row.c[1].v : '';
-                    const linkUrl = row.c[2] ? row.c[2].v : '#';
-                    const colorClass = row.c[3] ? row.c[3].v : 'purple';
-                    const iconName = row.c[4] ? row.c[4].v : 'fa-link';
-                    const startDateStr = row.c[5] ? row.c[5].v : null;
-                    const endDateStr = row.c[6] ? row.c[6].v : null;
-                    const imageUrl = row.c[7] ? row.c[7].v : null;
+                    let sheetStoreName = 'نافع ستور';
+                    let sheetStoreBio = '// CONNECTION_SECURE';
 
-                    // نظام فحص جدولة التاريخ التلقائي
-                    let shouldShow = true;
+                    if (rows[0]?.c[8]?.v) sheetStoreName = rows[0].c[8].v;
+                    if (rows[1]?.c[8]?.v) sheetStoreBio = rows[1].c[8].v;
 
-                    if (startDateStr) {
-                        // تحويل صيغة تاريخ جوجل شيت إلى صيغة يفهمها المتصفح
-                        const startDate = new Date(startDateStr);
-                        startDate.setHours(0, 0, 0, 0);
-                        if (today < startDate) shouldShow = false;
-                    }
+                    document.getElementById('dynamic-store-name').innerText = sheetStoreName;
+                    document.getElementById('dynamic-store-bio').innerText = sheetStoreBio;
 
-                    if (endDateStr) {
-                        const endDate = new Date(endDateStr);
-                        endDate.setHours(0, 0, 0, 0);
-                        if (today > endDate) shouldShow = false;
-                    }
+                    let delay = 0; 
 
-                    // إذا نجح الزر في الفحص ولم ينتهِ تاريخه، نقوم بعرضه وحركته
-                    if (shouldShow && title) {
-                        delay += 0.15; // زيادة التوقيت لكل زر ليظهر بعد الذي قبله
+                    rows.forEach((row, index) => {
+                        const title = row.c[0] ? row.c[0].v : '';
+                        const subtitle = row.c[1] ? row.c[1].v : '';
+                        const linkUrl = row.c[2] ? row.c[2].v : '#';
+                        const colorClass = row.c[3] ? row.c[3].v : 'purple';
+                        const iconName = row.c[4] ? row.c[4].v : 'fa-link';
                         
-                        // اختيار إما أيقونة كلاسيكية أو الصورة المرفوعة من الجدول
-                        const mediaHTML = imageUrl 
-                            ? `<img src="${imageUrl}" class="btn-img" alt="${title}">` 
-                            : `<i class="fa-solid ${iconName} icon"></i>`;
+                        const startDateStr = row.c[5] ? row.c[5].v : null;
+                        const endDateStr = row.c[6] ? row.c[6].v : null;
+                        const imageUrl = row.c[7] ? row.c[7].v : null;
 
-                        const btnHTML = `
-                            <a href="${linkUrl}" class="link-btn btn-${colorClass}" target="_blank" style="animation-delay: ${delay}s">
-                                ${mediaHTML}
-                                <div class="btn-text">
-                                    <span class="title">${title}</span>
-                                    ${subtitle ? `<span class="subtitle">${subtitle}</span>` : ''}
+                        let shouldShow = true;
+
+                        if (startDateStr) {
+                            const startDate = parseGoogleSheetDate(startDateStr);
+                            if (startDate) {
+                                startDate.setHours(0, 0, 0, 0);
+                                if (today < startDate) shouldShow = false;
+                            }
+                        }
+
+                        if (endDateStr) {
+                            const endDate = parseGoogleSheetDate(endDateStr);
+                            if (endDate) {
+                                endDate.setHours(23, 59, 59, 999);
+                                if (today > endDate) shouldShow = false;
+                            }
+                        }
+
+                        if (shouldShow && title) {
+                            delay += 0.1; 
+                            const streamId = `stream-${index}`;
+                            
+                            const mediaHTML = imageUrl 
+                                ? `<img src="${imageUrl}" class="btn-img animate-shimmer" alt="${title}">` 
+                                : `<i class="fa-solid ${iconName} icon"></i>`;
+
+                            const isLinkValid = (linkUrl && linkUrl.toString().trim() !== "" && linkUrl.toString().trim() !== "#");
+                            
+                            const cardHTML = `
+                                <div class="card-wrapper wrapper-${colorClass}" style="animation-delay: ${delay}s">
+                                    <div class="hud-bracket bracket-tl"></div>
+                                    <div class="hud-bracket bracket-tr"></div>
+                                    <div class="hud-bracket bracket-bl"></div>
+                                    <div class="hud-bracket bracket-br"></div>
+                                    <div class="glow-spotlight"></div>
+                                    <div class="code-bg" id="${streamId}"></div>
+                                    <${isLinkValid ? `a href="${linkUrl}"` : 'div style="cursor: none;"'} class="link-btn">
+                                        ${mediaHTML}
+                                        <div class="btn-text">
+                                            <span class="title">${title}</span>
+                                            ${subtitle ? `<span class="subtitle">${subtitle}</span>` : ''}
+                                        </div>
+                                    </${isLinkValid ? 'a' : 'div'}>
                                 </div>
-                            </a>
-                        `;
-                        container.innerHTML += btnHTML;
+                            `;
+                            container.innerHTML += cardHTML;
+                            
+                            setTimeout(() => startCodeStream(streamId), 50);
+                        }
+                    });
+
+                    if (container.innerHTML === '') {
+                        container.innerHTML = '<div class="error-msg">> ERROR: PORTAL_STREAM_EMPTY</div>';
                     }
+
+                    addInteractiveFeatures();
                 });
 
-                // في حال عدم وجود عروض مفعلة اليوم
-                if (container.innerHTML === '') {
-                    container.innerHTML = '<div class="error-msg">تابعونا قريباً لمعرفة أحدث خدماتنا وعروضنا الحصرية!</div>';
-                }
-
             } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('links-container').innerHTML = '<div class="error-msg">عذراً، تعذر تحديث البيانات حالياً.</div>';
+                console.error(error);
+                document.getElementById('links-container').innerHTML = '<div class="error-msg">> SYSTEM_HANDSHAKE_REJECTED</div>';
             }
         }
 
-        // تشغيل النظام تلقائياً
+        // === 🎮 إدارة التفاعلات الكاملة للكروت (3D Parallax, Spotlight, Audio Effects, المؤشر المخصص) ===
+        function addInteractiveFeatures() {
+            const wrappers = document.querySelectorAll('.card-wrapper');
+            const cursor = document.getElementById('custom-cursor');
+            const cursorDot = document.getElementById('custom-cursor-dot');
+
+            // تحريك مؤشر الماوس النيون التفاعلي
+            window.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                cursorDot.style.left = e.clientX + 'px';
+                cursorDot.style.top = e.clientY + 'px';
+            });
+
+            wrappers.forEach(wrapper => {
+                const innerElements = wrapper.querySelectorAll('.icon, .btn-img, .btn-text');
+                const spotlight = wrapper.querySelector('.glow-spotlight');
+
+                wrapper.addEventListener('mouseenter', () => {
+                    synthSound.playHover(); // تشغيل صوت نيون خفيف عند ملامسة الكارت بالماوس
+                    cursor.style.width = '48px';
+                    cursor.style.height = '48px';
+                    cursor.style.borderColor = 'var(--glow-color, #ffffff)';
+                });
+
+                wrapper.addEventListener('mousemove', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // تحريك دائرة النيون الكاشفة
+                    spotlight.style.left = x + 'px';
+                    spotlight.style.top = y + 'px';
+
+                    // حسابات زوايا الإمالة والعمق ثلاثي الأبعاد
+                    const rotateX = -((y - rect.height/2) / (rect.height/2)) * 12; 
+                    const rotateY = ((x - rect.width/2) / (rect.width/2)) * 12;
+                    
+                    wrapper.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.025)`;
+                    wrapper.style.boxShadow = `${-rotateY}px ${rotateX}px 35px rgba(0,0,0,0.45)`;
+
+                    innerElements.forEach(el => {
+                        el.style.transform = `translateZ(25px) translateX(${(x - rect.width/2) * 0.08}px) translateY(${(y - rect.height/2) * 0.08}px)`;
+                    });
+                });
+                
+                wrapper.addEventListener('mouseleave', () => {
+                    cursor.style.width = '32px';
+                    cursor.style.height = '32px';
+                    cursor.style.borderColor = 'var(--neon-purple)';
+                    
+                    wrapper.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+                    wrapper.style.boxShadow = `0 8px 32px rgba(0,0,0,0.2)`;
+                    
+                    innerElements.forEach(el => {
+                        el.style.transform = `translateZ(0) translateX(0) translateY(0)`;
+                    });
+                });
+
+                wrapper.addEventListener('click', () => {
+                    synthSound.playClick(); // تشغيل صوت كليك إلكتروني رائع عند حجز الرابط
+                });
+            });
+        }
+
+        // === 📡 محاكاة وتحديث شريط البيانات الحي الـ HUD (FPS & Ping Simulation) ===
+        function startDiagnosticsHUD() {
+    
+            
+            // تحديث قيمة الـ Ping عشوائياً كشاشات الألعاب السريعة
+            setInterval(() => {
+                const randomPing = Math.floor(Math.random() * 18) + 12;
+                pingDisplay.innerText = `PING: ${randomPing} ms`;
+            }, 1000);
+
+            // حساب الـ FPS الفعلي في الخلفية لعرضه في شريط الحالة
+            let lastCalledTime;
+            let fps;
+            function calcFPS() {
+                if(!lastCalledTime) {
+                    lastCalledTime = performance.now();
+                    fps = 0;
+                } else {
+                    let delta = (performance.now() - lastCalledTime)/1000;
+                    lastCalledTime = performance.now();
+                    fps = Math.round(1/delta);
+                }
+                fpsDisplay.innerText = `FPS: ${Math.min(fps, 60)}`;
+                requestAnimationFrame(calcFPS);
+            }
+            requestAnimationFrame(calcFPS);
+        }
+
+        initNeuralBackground();
         fetchLinks();
+        startDiagnosticsHUD();
     </script>
 </body>
 </html>
